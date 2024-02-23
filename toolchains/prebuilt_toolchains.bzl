@@ -20,6 +20,9 @@ filegroup(
             "**",
         ],
         exclude = [
+            "doc/**",
+            "man/**",
+            "share/**/Help/**",
             "WORKSPACE",
             "WORKSPACE.bazel",
             "BUILD",
