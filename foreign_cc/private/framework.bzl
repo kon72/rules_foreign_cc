@@ -151,6 +151,10 @@ CC_EXTERNAL_RULE_ATTRIBUTES = {
         doc = "Optional names of additional directories created by the build that should be declared as bazel action outputs",
         mandatory = False,
     ),
+    "out_data_files": attr.string_list(
+        doc = "Optional names of additional files created by the build that should be declared as bazel action outputs",
+        mandatory = False,
+    ),
     "out_dll_dir": attr.string(
         doc = "Optional name of the output subdirectory with the dll files, defaults to 'bin'.",
         mandatory = False,
@@ -744,6 +748,7 @@ def _define_outputs(ctx, attrs, lib_name):
     attr_headers_only = attrs.out_headers_only
     attr_interface_libs = attrs.out_interface_libs
     attr_out_data_dirs = attrs.out_data_dirs
+    attr_out_data_files = attrs.out_data_files
     attr_shared_libs = attrs.out_shared_libs
     attr_static_libs = attrs.out_static_libs
 
@@ -758,9 +763,11 @@ def _define_outputs(ctx, attrs, lib_name):
 
     out_include_dir = ctx.actions.declare_directory(lib_name + "/" + attrs.out_include_dir)
 
-    out_data_dirs = []
+    out_data = []
     for dir in attr_out_data_dirs:
-        out_data_dirs.append(ctx.actions.declare_directory(lib_name + "/" + dir.lstrip("/")))
+        out_data.append(ctx.actions.declare_directory(lib_name + "/" + dir.lstrip("/")))
+    for file in attr_out_data_files:
+        out_data.append(ctx.actions.declare_file(lib_name + "/" + file.lstrip("/")))
 
     out_binary_files = _declare_out(ctx, lib_name, attrs.out_bin_dir, attr_binaries_libs)
 
@@ -770,7 +777,7 @@ def _define_outputs(ctx, attrs, lib_name):
         interface_libraries = _declare_out(ctx, lib_name, attrs.out_lib_dir, attr_interface_libs),
     )
 
-    declared_outputs = [out_include_dir] + out_data_dirs + out_binary_files
+    declared_outputs = [out_include_dir] + out_data + out_binary_files
     declared_outputs += libraries.static_libraries
     declared_outputs += libraries.shared_libraries + libraries.interface_libraries
 
